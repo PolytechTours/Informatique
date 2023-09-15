@@ -27,7 +27,7 @@ ratioWidth = 1.0      #  rapport largeur graphe/ largeur de la fenetre
 ratioHeight =1.0      #  rapport hauteur du graphe hauteur de la fenetre
 
 #  cercle
-rayon = 1                # rayon pour dessin des points
+rayon = 5                # rayon pour dessin des points
 """ mettre 10 pour les graphes de tests
 et mettre 1 pour les vrai graphes paris et berlin
 """
@@ -132,7 +132,13 @@ class Noeud:
         global rayon
         x = self.pixelX
         y = self.pixelY
-        can.create_oval(x-rayon-5, y-rayon-5, x+rayon+5, y+rayon+5, outline = color, fill = color)
+        can.create_oval(x-rayon, y-rayon, x+rayon, y+rayon, outline = color, fill = color)
+
+     def dessinNoeudSmall(self, graphe, can):
+         global rayon
+         x = self.pixelX
+         y = self.pixelY
+         can.create_oval(x-rayon, y-rayon, x+rayon, y+rayon, outline = "grey50", fill = "grey50")
 
     # affichage graphique du noeud et de tous les arcs sortants du noeud : le graphe qui contient le noeud à afficher, le canvas d'affichage, la couleur 
      def dessinNoeudArc(self, graphe, can, color):
@@ -444,6 +450,8 @@ def callback1(event,graphe):
 
     global Source
 
+    (graphe.listeNoeud[Source]).dessinNoeudSmall(graphe, can)
+
     indNoeud = noeudPlusProche(event)
 
     noeudCible = graphe.listeNoeud[indNoeud]
@@ -459,6 +467,8 @@ def callback2(event,graphe):
 
     min = sys.maxsize
     indice  = sys.maxsize
+
+    graphe.listeNoeud[Destination].dessinNoeudSmall(graphe, can)
 
     indNoeud = noeudPlusProche(event)
 
