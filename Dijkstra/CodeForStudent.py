@@ -34,8 +34,8 @@ et mettre 1 pour les vrai graphes paris et berlin
 
 
 # defintion source et dest par defaut 
-Source = 2000
-Dest = 2689
+Source = 0
+Destination = 0
 
 # Permet de stocker mapper les noeud avec les cercles qui sont leur représentation graphie pour les retrouver suite à unclick de la souris
 MappageNoeud = OrderedDict()
@@ -450,7 +450,8 @@ def callback1(event,graphe):
 
     global Source
 
-    (graphe.listeNoeud[Source]).dessinNoeudSmall(graphe, can)
+    if(Source != 0):
+        (graphe.listeNoeud[Source]).dessinNoeudSmall(graphe, can)
 
     indNoeud = noeudPlusProche(event)
 
@@ -468,7 +469,8 @@ def callback2(event,graphe):
     min = sys.maxsize
     indice  = sys.maxsize
 
-    graphe.listeNoeud[Destination].dessinNoeudSmall(graphe, can)
+    if(Destination != 0):
+        graphe.listeNoeud[Destination].dessinNoeudSmall(graphe, can)
 
     indNoeud = noeudPlusProche(event)
 
@@ -539,8 +541,8 @@ def applyAStar(graphe) :
 
 # definition du graphe Paris
 graphe = Graphe()
-nomFichierNoeud ="./graphes/paris_noeuds.csv"
-nomFichierArc ="./graphes/paris_arcs.csv"
+nomFichierNoeud ="./graphes/testNoeuds1.csv"
+nomFichierArc ="./graphes/testArcs1.csv"
 
 #nomFichierNoeud ="./graphes/paris_noeuds.csv"
 #nomFichierArc ="./graphes/paris_arcs.csv"
