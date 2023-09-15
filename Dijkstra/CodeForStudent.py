@@ -99,12 +99,15 @@ class Noeud:
 
      listeArcSucc = []     # liste des successeurs (arc sortant du noeud)
 
+     securite=0
+
      # constructeur par defaut : indice, longitude te latitude en degré
-     def __init__(self, ind, long, lat) :
+     def __init__(self, ind, long, lat, securite) :
          self.indice = ind
          self.longitude = long
          self.latitude = lat 
          self.listeArcSucc = []
+         self.securite = securite
          
     # affichage formaté en console d'un noeud
      def affiche(self):
@@ -445,6 +448,64 @@ class Graphe:
         chemin.append(source)
         # renvoie le chemin
         return chemin
+            
+    # ---------------------------------------------------------------
+    # SECURITE
+    # ---------------------------------------------------------------
+    # entrée : noeud source, noeud dest, graphe, valeur de sécurité (danger, ce paramètre de l'algo est choisi par l'utilisateur et sa valeur est comprise dans et est chaque noeud)
+    # sortie : (tableau des pred noeuds du chemin, liste des indices des noeuds explorés)
+    # ---------------------------------------------------------------
+     def AStarSecurite(self, source, dest, securite) :
+        # Initialisation
+        distance=[]
+        explore=[]
+        cheminTmp=[]
+        listeCandidat=[]
+
+        for noeud in self.listeNoeud:
+            indNoeud = noeud.indice
+            distance.append(sys.maxsize)
+            cheminTmp.append(sys.maxsize)
+        
+        distance[source]=0
+        cheminTmp[source]=source
+        listeCandidat.append(source)
+        explore.append(source)
+        securite=[source[2]]
+
+        # Exploration
+        while (listeCandidat != []):
+            #Choisir xi appartenant au candidat de (di + Deuclid(i, destination)) minimum et de securite minimum
+            min = sys.maxsize
+            indiceMin = sys.maxsize
+            securiteMin = sys.maxsize
+            for i in listeCandidat:
+                if (noeud.securite[i]<securiteMin):
+                    securiteMin = noeud.securite[i]
+                    indiceMin = i
+                if (distance[i]+self.distanceEuclidienne(i, dest)<min):
+                    min = distance[i]+self.distanceEuclidienne(i, dest)
+                    indiceMin = i
+            xi = indiceMin
+            #append xi à S
+            explore.append(xi)
+            #Retirer xi de Candidat
+            listeCandidat.remove(xi)
+            #Pour tout xj appartenant au candidat successeur de xi
+            for arc in self.listeNoeud[xi].listeArcSucc:
+                xj = arc.indDest
+                #si dj = infini ajouter xj à Candidat
+                if (distance[xj]==sys.maxsize):
+                    listeCandidat.append(xj)
+                #dj = min (dj, di+d(xi,xj))
+                if (distance[xj]>distance[xi]+self.distanceEuclidienne(xi, xj)):
+                    distance[xj]=distance[xi]+self.distanceEuclidienne(xi, xj)
+                    cheminTmp[xj]=xi
+            #chemin
+            if (xi==dest):
+                return (self.reconstruitChemin(cheminTmp, source, dest), explore)
+
+
 
 # --------------------------------------------------------------------------
 #
