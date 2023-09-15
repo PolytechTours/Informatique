@@ -27,7 +27,7 @@ ratioWidth = 1.0      #  rapport largeur graphe/ largeur de la fenetre
 ratioHeight =1.0      #  rapport hauteur du graphe hauteur de la fenetre
 
 #  cercle
-rayon = 5                # rayon pour dessin des points
+rayon = 1                # rayon pour dessin des points
 """ mettre 10 pour les graphes de tests
 et mettre 1 pour les vrai graphes paris et berlin
 """
@@ -321,8 +321,49 @@ class Graphe:
     # entrée : noeud source, noeud dest, graphe
     # sortie : (tableau des pred noeuds du chemin, liste des indices des noeuds explorés)
      def DijkstraV1(self, source, dest) :
-        pass
-         
+         # Initialisation
+        distance=[]
+        explore=[]
+        cheminTmp=[]
+        listeCandidat=[]
+
+        for noeud in self.listeNoeud:
+            indNoeud = noeud.indice
+            distance.append(sys.maxsize)
+            cheminTmp.append(sys.maxsize)
+        
+        distance[source]=0
+        cheminTmp[source]=source
+        listeCandidat.append(source)
+        explore.append(source)
+
+        # Exploration
+        while (listeCandidat != []):
+            #Choisir xi appartenant au candidat de (di + Deuclid(i, destination)) minimum 
+            min = sys.maxsize
+            indiceMin = sys.maxsize
+            for ind in listeCandidat:
+                if (distance[ind]<min):
+                    min = distance[ind]
+                    indiceMin = ind
+            xi = indiceMin
+            #append xi à S
+            explore.append(xi)
+            #Retirer xi de Candidat
+            listeCandidat.remove(xi)
+            #Pour tout xj appartenant au candidat successeur de xi 	
+            for arc in self.listeNoeud[xi].listeArcSucc:
+                xj = arc.indDest
+                #si dj = infini ajouter xj à Candidat
+                if (distance[xj]==sys.maxsize):
+                    listeCandidat.append(xj)
+                #dj = min (dj, di+d(xi,xj))
+                if (distance[xj]>distance[xi]+arc.longueur):
+                    distance[xj]=distance[xi]+arc.longueur
+                    cheminTmp[xj]=xi
+            #chemin
+            if (xi==dest):
+                return (self.reconstruitChemin(cheminTmp, source, dest), explore)     
          
          
      
@@ -347,25 +388,6 @@ class Graphe:
         return math.sqrt((xDest-xSource)**2 + (yDest-ySource)**2)
 
      def AStar(self, source, dest) :
-        #// Initialisation 
-        #S = [source],  d0 = 0 ; Candidat ={x0}
-        #si il existe un arc (x0 vers xi) 
-        #	di = d(x0,xi) 
-        #Sinon
-        #	di = infini
-        #// Exploration
-        #Tant que (xi =/ destination)
-        #Choisir xi appartenant au candidat de (di + Deuclid(i, destination)) minimum 
-        #append xi à S
-        #Retirer xi de Candidat
-        #Pour tout xj appartenant au candidat successeur de xi 	
-        #	// si dj = infini le nœud devient
-        #	// accessible
-        #	si dj = infini ajouter xj à Candidat
-        #	dj = min (dj, di+d(xi,xj))
-        #Fin pour
-        #Fin tant que
-
         # Initialisation
         distance=[]
         explore=[]
@@ -403,8 +425,8 @@ class Graphe:
                 if (distance[xj]==sys.maxsize):
                     listeCandidat.append(xj)
                 #dj = min (dj, di+d(xi,xj))
-                if (distance[xj]>distance[xi]+arc.longueur):
-                    distance[xj]=distance[xi]+arc.longueur
+                if (distance[xj]>distance[xi]+self.distanceEuclidienne(xi, xj)):
+                    distance[xj]=distance[xi]+self.distanceEuclidienne(xi, xj)
                     cheminTmp[xj]=xi
             #chemin
             if (xi==dest):
@@ -541,8 +563,8 @@ def applyAStar(graphe) :
 
 # definition du graphe Paris
 graphe = Graphe()
-nomFichierNoeud ="./graphes/testNoeuds1.csv"
-nomFichierArc ="./graphes/testArcs1.csv"
+nomFichierNoeud ="./graphes/paris_noeuds.csv"
+nomFichierArc ="./graphes/paris_arcs.csv"
 
 #nomFichierNoeud ="./graphes/paris_noeuds.csv"
 #nomFichierArc ="./graphes/paris_arcs.csv"
