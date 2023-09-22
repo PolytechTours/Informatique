@@ -20,3 +20,136 @@ def Affiche_mesure (self, x, y, mesure, mesure_prec, unite mesure, format str, c
     # "{:3d}" : pour L'index cov
     if police == None :
         raise ValueError ('Une police de caractères est requise')
+
+
+from PIL import Image, ImageDraw, ImageFont
+import adafruit_touchscreen
+import board
+import ili9341
+
+#Compléter le code du module Affichage_Graphique.py avec l’écriture des fonctions :
+#- Tableau_ecran_2 : pour afficher le tableau des valeurs min et max de température, humidité, Index Cov et taux de CO2, ainsi que l’échelle du rétroéclairage avec le niveau courant, et un bouton Reset pour provoquer ultérieurement la mise à jour des valeurs du tableau ;
+#- Bouton : pour afficher un bouton avec une légende et une couleur de fond ;
+#- Echelle_choix_RetroEclairage : pour afficher sur l’écran TFT l’échelle des niveaux de luminosité du rétroéclairage et visualiser le niveau courant.
+temp=BME280.read_temp()
+hum=BME280.read_humidity()
+cov=sgp40_capteur_cov.measure_index(temp, hum)
+co2=capteur_SCD41.CO2
+
+
+def tableau_ecran_2(temp, hum, cov, co2):
+    min_temp = min(temp, min_temp)
+    max_temp = max(temp, max_temp)
+    min_hum = min(hum, min_hum)
+    max_hum = max(hum, max_hum)
+    min_cov = min(cov, min_cov)
+    max_cov = max(cov, max_cov)
+    min_co2 = min(co2, min_co2)
+    max_co2 = max(co2, max_co2)
+    #dessine un tableau de 3 colonnes et 5 lignes
+    ImageDraw.rectangle((0, 0, 30, 100), fill=0, outline=255)
+    ImageDraw.rectangle((30, 0, 60, 100), fill=0, outline=255)
+    ImageDraw.rectangle((60, 0, 90, 100), fill=0, outline=255)
+
+    ImageDraw.rectangle((0, 0, 90, 20), fill=0, outline=255)
+    ImageDraw.rectangle((0, 20, 90, 40), fill=0, outline=255)
+    ImageDraw.rectangle((0, 40, 90, 60), fill=0, outline=255)
+    ImageDraw.rectangle((0, 60, 90, 80), fill=0, outline=255)
+    ImageDraw.rectangle((0, 80, 90, 100), fill=0, outline=255)
+
+    ImageDraw.text((2, 22), "Temp", font=unispace, fill=255)
+    ImageDraw.text((2, 42), "Hum", font=unispace, fill=255)
+    ImageDraw.text((2, 62), "COV", font=unispace, fill=255)
+    ImageDraw.text((2, 82), "CO2", font=unispace, fill=255)
+
+    ImageDraw.text((32, 2), "Min", font=unispace, fill=255)
+    ImageDraw.text((62, 2), "Max", font=unispace, fill=255)
+
+    ImageDraw.text((32, 22), "{:+5.1f} °C".format(min_temp), font=unispace, fill=255)
+    ImageDraw.text((62, 22), "{:+5.1f} °C".format(max_temp), font=unispace, fill=255)
+    ImageDraw.text((32, 42), "{:4.1f} %".format(min_hum), font=unispace, fill=255)
+    ImageDraw.text((62, 42), "{:4.1f} %".format(max_hum), font=unispace, fill=255)
+    ImageDraw.text((32, 62), "{:3d}".format(min_cov), font=unispace, fill=255)
+    ImageDraw.text((62, 62), "{:3d}".format(max_cov), font=unispace, fill=255)
+    ImageDraw.text((32, 82), "{:4d} ppm".format(min_co2), font=unispace, fill=255)
+    ImageDraw.text((62, 82), "{:4d} ppm".format(max_co2), font=unispace, fill=255)
+
+
+def Bouton():
+    ImageDraw.rectangle((0, 102, 30, 124), fill=(255,0,0), outline=255)
+    ImageDraw.text((2, 102), "Reset", font=unispace, fill=255)
+    ts = adafruit_touchscreen.Touchscreen(board.TOUCH_XL, board.TOUCH_XR,
+                      board.TOUCH_YD, board.TOUCH_YU)
+    while True:
+        p = ts.touch_point
+        if p:
+            x, y = p
+            if 0 <= x < 30 and 102 <= y < 124:
+                min_temp = temp
+                max_temp = temp
+                min_hum = hum
+                max_hum = hum
+                min_cov = cov
+                max_cov = cov
+                min_co2 = co2
+                max_co2 = co2
+            else:
+                pass
+
+def Echelle_choix_Retroeclairage():
+    ImageDraw.rectangle((60, 102, 80, 124), fill=255, outline=255)
+    ImageDraw.rectangle((80, 102, 100, 124), fill=200, outline=255)
+    ImageDraw.rectangle((100, 102, 120, 124), fill=150, outline=255)
+    ImageDraw.rectangle((120, 102, 140, 124), fill=100, outline=255)
+    ImageDraw.rectangle((140, 102, 160, 124), fill=50, outline=255)
+
+    # Turn on the Backlight
+    backlight = DigitalInOut(board.D26)
+    backlight.switch_to_output()
+    backlight.value = True
+
+    ts = adafruit_touchscreen.Touchscreen(board.TOUCH_XL, board.TOUCH_XR,
+                      board.TOUCH_YD, board.TOUCH_YU)
+
+    while True:
+        p = ts.touch_point
+        if p:
+            x, y = p
+            if 60 <= x < 80 and 102 <= y < 124:
+                tft.brightness = 0.5
+                ImageDraw.circle((70, 113), 5, fill=(255,0,0), outline=255)
+                ImageDraw.circle((90, 113), 5, fill=200, outline=255)
+                ImageDraw.circle((110, 113), 5, fill=150, outline=255)
+                ImageDraw.circle((130, 113), 5, fill=100, outline=255)
+                ImageDraw.circle((150, 113), 5, fill=50, outline=255)
+                backlight.value = 
+            elif 80 <= x < 100 and 102 <= y < 124:
+                tft.brightness = 0.4
+                ImageDraw.circle((90, 113), 5, fill=(255,0,0), outline=255)
+                ImageDraw.circle((70, 113), 5, fill=255, outline=255)
+                ImageDraw.circle((110, 113), 5, fill=150, outline=255)
+                ImageDraw.circle((130, 113), 5, fill=100, outline=255)
+                ImageDraw.circle((150, 113), 5, fill=50, outline=255)
+            elif 100 <= x < 120 and 102 <= y < 124:
+                tft.brightness = 0.3
+                ImageDraw.circle((110, 113), 5, fill=(255,0,0), outline=255)
+                ImageDraw.circle((70, 113), 5, fill=255, outline=255)
+                ImageDraw.circle((90, 113), 5, fill=200, outline=255)
+                ImageDraw.circle((130, 113), 5, fill=100, outline=255)
+                ImageDraw.circle((150, 113), 5, fill=50, outline=255)
+            elif 120 <= x < 140 and 102 <= y < 124:
+                tft.brightness = 0.2
+                ImageDraw.circle((130, 113), 5, fill=(255,0,0), outline=255)
+                ImageDraw.circle((70, 113), 5, fill=255, outline=255)
+                ImageDraw.circle((90, 113), 5, fill=200, outline=255)
+                ImageDraw.circle((110, 113), 5, fill=150, outline=255)
+                ImageDraw.circle((150, 113), 5, fill=50, outline=255)
+            elif 140 <= x < 160 and 102 <= y < 124:
+                tft.brightness = 0.1
+                ImageDraw.circle((150, 113), 5, fill=(255,0,0), outline=255)
+                ImageDraw.circle((70, 113), 5, fill=255, outline=255)
+                ImageDraw.circle((90, 113), 5, fill=200, outline=255)
+                ImageDraw.circle((110, 113), 5, fill=150, outline=255)
+                ImageDraw.circle((130, 113), 5, fill=100, outline=255)
+            else:
+                pass
