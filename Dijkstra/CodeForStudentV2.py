@@ -572,6 +572,40 @@ def applyDijkstra(graphe) :
     noeudCible = graphe.listeNoeud[Source]
     noeudCible.dessinNoeudHuge(graphe, can, "purple")
 
+
+def applyDijkstraV2(graphe) : #trace le chemin deux fois, une fois pour le danger et une fois pour la distance
+    print("ok")
+
+    global Source
+    global Destination
+
+    # calcul du chemin
+    result= graphe.DijkstraV2(Source, Destination)
+    print("============ Calcul Chemin OK ================")
+    chemin = result[0]    # chemin non formaté
+    explore = result[1]
+    print('CHEMIN DISKSTRA', chemin)
+    can.delete(ALL)
+    graphe.dessinGraphe(can, "grey50")
+    graphe.dessinCheminNoeud(can, explore, "yellow")
+    graphe.dessinCheminNoeud(can, chemin, "red")
+    noeudCible = graphe.listeNoeud[Destination]
+    noeudCible.dessinNoeudHuge(graphe, can, "green")
+    noeudCible = graphe.listeNoeud[Source]
+    noeudCible.dessinNoeudHuge(graphe, can, "purple")
+
+    result1= graphe.DijkstraV1(Source, Destination)
+    print("============ Calcul Chemin OK ================")
+    chemin1 = result1[0]    # chemin non formaté
+    explore1 = result1[1]
+    print('CHEMIN DISKSTRA', chemin1)
+    graphe.dessinCheminNoeud(can, chemin1, "blue")
+    noeudCible = graphe.listeNoeud[Destination]
+    noeudCible.dessinNoeudHuge(graphe, can, "green")
+    noeudCible = graphe.listeNoeud[Source]
+    noeudCible.dessinNoeudHuge(graphe, can, "purple")
+    
+
 # recupere le noeud source et le noeud dest
 # lance A* 
 # dessine le chemin (rouge), et l'ensemble des noeuds explorés (jaune)def applyAStar(graphe) :
@@ -624,11 +658,13 @@ can.bind("<Button-1>", lambda event, g = graphe :callback1(event, g))
 can.bind("<Button-3>", lambda event, g = graphe :callback2(event, g))
 b = Button(fen , text = "Dijkstra", command = lambda   g= graphe :applyDijkstra(g))
 c = Button(fen , text = "   A*   ", command = lambda   g= graphe :applyAStar(g))
+d = Button(fen , text = "DijkstraV2", command = lambda   g= graphe :applyDijkstraV2(g))
 
  
 # Placer le bouton sur la fenêtre
 b.pack()
 c.pack()
+d.pack()
 
 graphe.dessinGraphe(can, "grey50")
 
