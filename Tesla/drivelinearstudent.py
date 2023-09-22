@@ -51,12 +51,13 @@ controller.set_desired(set_speed)
 @sio.on('telemetry')
 def telemetry(sid, data):
     global x,W
+    print(data)
     if data:
         # The current steering angle of the car
         steering_angle = data["steering_angle"]
         # The current throttle of the car
         throttle = data["throttle"]
-        #print("throttle", throttle)
+        print("throttle", throttle)
         # The current speed of the car
         speed = data["speed"]
         # The current image from the center camera of the car
@@ -73,6 +74,8 @@ def telemetry(sid, data):
 		# Ici il faut prédire la valeur de l'angle
 		# Et la sauvegarder dans la variable angle
 		##########################################
+
+        angle=np.dot(x,W)
         
 		########        
         steering_angle=float(angle)

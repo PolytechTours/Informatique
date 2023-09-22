@@ -12,14 +12,27 @@ from random import shuffle
 from sklearn.model_selection import train_test_split
 
 
-DATA_PATH = "data/driving_log.csv"
-DATA_IMG = "data/"
+DATA_PATH = "C:/Users/pilou/Downloads/data/data/driving_log.csv"
+DATA_IMG = "C:/Users/pilou/Downloads/data/data/"
 DIM_VEC_Image=67200#160*320*3
 
 #
 #La fonction à compléter par les étudiants
 def DescenteGradient (X,Y,W,pas) :
-    
+
+    #Calcul de l'erreur
+    erreur=0
+    for i in range(0,len(X)):
+        erreur=erreur+(np.dot(X[i],W)-Y[i])**2
+    erreur=erreur/len(X)
+    #Calcul du gradient
+    gradient=np.zeros((len(W),1))
+    for i in range(0,len(X)):
+        gradient=gradient+2*X[i].reshape(len(W),1)*(np.dot(X[i],W)-Y[i])
+    gradient=gradient/len(X)
+    #Mise à jour des W
+    W=W-pas*gradient
+    #Affichage de l'erreur
 
     if np.random.random()>0.90:
         print('Erreur : ',erreur)
@@ -92,7 +105,7 @@ def main():
     random_indexs = np.array(range(len(content)))
 	#test_size=0.15 : 15 pour cent de la base sert pour la validation
     #test_size peut être diminué mais ça va rendre l'apprentissage plus long 
-	train_index, valid_index = train_test_split(random_indexs, test_size=0.15)
+    train_index, valid_index = train_test_split(random_indexs, test_size=0.15)
 
     print("Train size = %s" % len(train_index))
 	#si le temps le permet ou si les étudiants sont demandeurs
@@ -123,9 +136,12 @@ def main():
 	# 4 : Aller à l'étape 2 tant qu'on a pas traité toutes les données
 	# 5 : Recommencer tant que le nombre d'itération n'est pas atteint
 	####################################
-    
-	# to do
-	
+    tailleTrain = len(train_index)
+    for y in range(nbiter):
+        for i in range(0, tailleTrain, BATCH_SIZE):
+            images, rotations = getBatch(content, train_index, BATCH_SIZE,True)
+            W,erreur=DescenteGradient(images,rotations,W,pas)
+            print('Erreur : ',erreur)
 	
 	
 	
