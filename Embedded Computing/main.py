@@ -116,6 +116,93 @@ from adafruit_sgp40 import *
 #- La compensation de la mesure du taux de CO2 par la pression atmosphérique sera aussi gérée par timer ;
 #- La mesure de l’index COV sera systématiquement compensée par la dernière mesure de la température et du taux d’humidité du capteur BME280.
 
+#i2c=I2C(0, sda=SDA_pin, scl=SCL_pin, freq=Freq_i2c)
+#adr=i2c.scan()
+#print('Adresse peripherique I2C :', adr)
+#
+#Id_BME280 = i2c.readfrom_mem(BME280_I2C_ADR, BME280_CHIP_ID_ADDR, 1)
+#print ('Valeur Id_BME280 : ', hex (Id_BME280[0]))
+#capteur_BME280 = BME280 (BME280_I2C_ADR, i2c)
+#capteur_BME280.Calibration_Param_Load()
+#
+#capteur_SCD41 = SCD4X (i2c, SCD4X_DEFAULT_ADDR)
+#capteur_SCD41.stop_periodic_measurement()
+#print("Serial number :", [hex(i) for i in capteur_SCD41.serial_number])
+#capteur_SCD41.set_ambient_pressure(int(pression_BME280))
+#capteur_SCD41.start_periodic_measurement()
+#
+#sgp40_capteur_cov = SGP40 (i2c)
+#print("SGP40 Serial number :", [hex(i) for i in sgp40_capteur_cov._serial_number])
+#voc_index = sgp40_capteur_cov.measure_index(temperature, relative_humidity)
+#
+#def callback_SCD41 (timer):
+#    if capteur_SCD41.data_ready: # attendre qu'une mesure soit disponible
+#        co2 = capteur_SCD41.CO2
+#        temperature_SCD41 = capteur_SCD41.temperature
+#        humidity_SCD41 = capteur_SCD41.relative_humidity
+#        # Affichage des mesures SCD41
+#        print("CO2 : %d ppm" % co2)
+#        print("Temperature : %.2f °C" % temperature_SCD41)
+#        print("Humidite : %.2f %%" % humidity_SCD41)
+#    else:
+#        print("No data available")
+#    
+#def callback_BME280 (timer):
+#    print ('Temperature : ', BM280.read_temp())
+#    print ('Pression : ', BM280.read_pressure())
+#    print ('Humidite : ', BM280.read_humidity())
+#
+#def callback_SGP40 (timer):
+#    voc_index = sgp40_capteur_cov.measure_index(BME_280.read_temp(), BME_280.read_humidity())
+#    print("VOC index : %d" % voc_index)
+#
+#timer_SCD41 = Timer(0)
+#timer_SCD41.init(period=5000, mode=Timer.PERIODIC, callback=callback_SCD41)
+#timer_BME280 = Timer(1)
+#timer_BME280.init(period=1000, mode=Timer.PERIODIC, callback=callback_BME280)
+#timer_SGP40 = Timer(2)
+#timer_SGP40.init(period=1000, mode=Timer.PERIODIC, callback=callback_SGP40)
+#timer_SCD41_2= Timer(3)
+#timer_SCD41_2.init(period=3600000, mode=Timer.PERIODIC, callback=capteur_SCD41.set_ambient_pressure(int(pression_BME280)))
+
+
+
+#Synthese 7 :
+from ConfigMateriel_pico import *
+import machine
+import time
+from ILI9341 import ili9341
+from ILI9341 import xglcd_font
+
+
+spi_tft = machine.SPI(0)
+def __init__(self, spi, cs, dc, rst,
+ width=240, height=320, rotation=0):
+    """Initialize OLED.
+     Args:
+     spi (Class Spi): SPI interface for OLED
+     cs (Class Pin): Chip select pin
+     dc (Class Pin): Data/Command pin
+     rst (Class Pin): Reset pin
+     width (Optional int): Screen width (default 240)
+     height (Optional int): Screen height (default 320)
+     rotation (Optional int): Rotation must be 0 default, 90. 180 or 270
+     """
+
+tft = ili9341.Display(spi_tft, dc = TFT_DC_pin, cs = SPI_CS_pin, rst = TFT_RESET_pin, rotation = 90)
+tft.clear()
+
+print('Loading fonts...')
+print('Loading unispace')
+unispace = xglcd_font.XglcdFont('fonts/Unispace12x24.c', 12, 24)
+print('Loading unispaceExt')
+unispaceExt = xglcd_font.XglcdFont('fonts/UnispaceExt12x24.c', 12, 24, letter_count=224)
+print('Fonts loaded.')
+
+#: écrire le programme qui permet :
+#- D’afficher les éléments du fond de l’écran 1 et de valider leur mise en forme ;
+#- De vérifier que l’affichage des différentes mesures respecte les formats attendus ; 
+
 i2c=I2C(0, sda=SDA_pin, scl=SCL_pin, freq=Freq_i2c)
 adr=i2c.scan()
 print('Adresse peripherique I2C :', adr)
@@ -138,23 +225,25 @@ voc_index = sgp40_capteur_cov.measure_index(temperature, relative_humidity)
 def callback_SCD41 (timer):
     if capteur_SCD41.data_ready: # attendre qu'une mesure soit disponible
         co2 = capteur_SCD41.CO2
-        temperature_SCD41 = capteur_SCD41.temperature
-        humidity_SCD41 = capteur_SCD41.relative_humidity
         # Affichage des mesures SCD41
-        print("CO2 : %d ppm" % co2)
-        print("Temperature : %.2f °C" % temperature_SCD41)
-        print("Humidite : %.2f %%" % humidity_SCD41)
+        tft.drawtext(50, 70, "CO2 : %d ppm" % co2, unispace, ili9341.color565(255, 255, 255),  background=0,)
     else:
         print("No data available")
     
 def callback_BME280 (timer):
-    print ('Temperature : ', BM280.read_temp())
-    print ('Pression : ', BM280.read_pressure())
-    print ('Humidite : ', BM280.read_humidity())
+    tft.drawtext(50, 10, "Temperature : %.2f °C" % BM280.read_temp(), unispace, ili9341.color565(255, 255, 255),  background=0,)
+    tft.drawtext(50, 30, "Pression : %.2f hPa" % BM280.read_pressure(), unispace, ili9341.color565(255, 255, 255),  background=0,)
+    tft.drawtext(50, 50, "Humidite : %.2f %%" % BM280.read_humidity(), unispace, ili9341.color565(255, 255, 255),  background=0,)
 
 def callback_SGP40 (timer):
     voc_index = sgp40_capteur_cov.measure_index(BME_280.read_temp(), BME_280.read_humidity())
-    print("VOC index : %d" % voc_index)
+    tft.drawtext(50, 90, "COV_index : %d" % voc_index, unispace, ili9341.color565(255, 255, 255),  background=0,)
+
+tft.drawtext(2, 10, "Temperature :", unispace, ili9341.color565(255, 255, 255),  background=0,)
+tft.drawtext(2, 30, "Pression :", unispace, ili9341.color565(255, 255, 255),  background=0,)
+tft.drawtext(2, 50, "Humidite :", unispace, ili9341.color565(255, 255, 255),  background=0,)
+tft.drawtext(2, 70, "CO2 :", unispace, ili9341.color565(255, 255, 255),  background=0,)
+tft.drawtext(2, 90, "COV_index :", unispace, ili9341.color565(255, 255, 255),  background=0,)
 
 timer_SCD41 = Timer(0)
 timer_SCD41.init(period=5000, mode=Timer.PERIODIC, callback=callback_SCD41)
