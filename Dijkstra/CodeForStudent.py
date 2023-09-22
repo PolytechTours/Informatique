@@ -338,8 +338,7 @@ class Graphe:
         explore.append(source)
 
         # Exploration
-        while (listeCandidat != []):
-            #Choisir xi appartenant au candidat de (di + Deuclid(i, destination)) minimum 
+        while (listeCandidat != []): 
             min = sys.maxsize
             indiceMin = sys.maxsize
             for ind in listeCandidat:
@@ -363,8 +362,49 @@ class Graphe:
                     cheminTmp[xj]=xi
             #chemin
             if (xi==dest):
-                return (self.reconstruitChemin(cheminTmp, source, dest), explore)     
-         
+                return (self.reconstruitChemin(cheminTmp, source, dest), explore)
+
+
+     def DijkstraV2(self, source, dest) : #dijkstra utilisant le danger au lieu de la distance
+         # Initialisation
+            danger=[]
+            explore=[]
+            cheminTmp=[]
+            listeCandidat=[]
+            for noeud in self.listeNoeud:
+                indNoeud = noeud.indice
+                danger.append(sys.maxsize)
+                cheminTmp.append(sys.maxsize)
+            danger[source]=0
+            cheminTmp[source]=source
+            listeCandidat.append(source)
+            explore.append(source)
+            # Exploration
+            while (listeCandidat != []): 
+                min = sys.maxsize
+                indiceMin = sys.maxsize
+                for ind in listeCandidat:
+                    if (danger[ind]<min):
+                        min = danger[ind]
+                        indiceMin = ind
+                xi = indiceMin
+                #append xi à S
+                explore.append(xi)
+                #Retirer xi de Candidat
+                listeCandidat.remove(xi)
+                #Pour tout xj appartenant au candidat successeur de xi 	
+                for arc in self.listeNoeud[xi].listeArcSucc:
+                    xj = arc.indDest
+                    #si dj = infini ajouter xj à Candidat
+                    if (danger[xj]==sys.maxsize):
+                        listeCandidat.append(xj)
+                    #dj = min (dj, di+d(xi,xj))
+                    if (danger[xj]>danger[xi]+arc.danger):
+                        danger[xj]=danger[xi]+arc.danger
+                        cheminTmp[xj]=xi
+                #chemin
+                if (xi==dest):
+                    return (self.reconstruitChemin(cheminTmp, source, dest), explore)
          
      
 
@@ -532,6 +572,39 @@ def applyDijkstra(graphe) :
     noeudCible = graphe.listeNoeud[Source]
     noeudCible.dessinNoeudHuge(graphe, can, "purple")
 
+
+def applyDijkstraV2(graphe) : #trace le chemin deux fois, une fois pour le danger et une fois pour la distance
+    print("ok")
+
+    global Source
+    global Destination
+
+    # calcul du chemin
+    result= graphe.DijkstraV2(Source, Destination)
+    print("============ Calcul Chemin OK ================")
+    chemin = result[0]    # chemin non formaté
+    explore = result[1]
+    print('CHEMIN DISKSTRA', chemin)
+    can.delete(ALL)
+    graphe.dessinGraphe(can, "grey50")
+    graphe.dessinCheminNoeud(can, explore, "yellow")
+    graphe.dessinCheminNoeud(can, chemin, "red")
+    noeudCible = graphe.listeNoeud[Destination]
+    noeudCible.dessinNoeudHuge(graphe, can, "green")
+    noeudCible = graphe.listeNoeud[Source]
+    noeudCible.dessinNoeudHuge(graphe, can, "purple")
+
+    result1= graphe.DijkstraV1(Source, Destination)
+    print("============ Calcul Chemin OK ================")
+    chemin1 = result1[0]    # chemin non formaté
+    print('CHEMIN DISKSTRA', chemin1)
+    graphe.dessinCheminNoeud(can, chemin1, "blue")
+    noeudCible = graphe.listeNoeud[Destination]
+    noeudCible.dessinNoeudHuge(graphe, can, "green")
+    noeudCible = graphe.listeNoeud[Source]
+    noeudCible.dessinNoeudHuge(graphe, can, "purple")
+    
+
 # recupere le noeud source et le noeud dest
 # lance A* 
 # dessine le chemin (rouge), et l'ensemble des noeuds explorés (jaune)def applyAStar(graphe) :
@@ -566,9 +639,6 @@ graphe = Graphe()
 nomFichierNoeud ="./graphes/paris_noeuds.csv"
 nomFichierArc ="./graphes/paris_arcs.csv"
 
-#nomFichierNoeud ="./graphes/paris_noeuds.csv"
-#nomFichierArc ="./graphes/paris_arcs.csv"
-
 # lecture noeud Paris
 graphe.lectureNoeud(nomFichierNoeud)
 graphe.lectureArc(nomFichierArc)
@@ -584,11 +654,13 @@ can.bind("<Button-1>", lambda event, g = graphe :callback1(event, g))
 can.bind("<Button-3>", lambda event, g = graphe :callback2(event, g))
 b = Button(fen , text = "Dijkstra", command = lambda   g= graphe :applyDijkstra(g))
 c = Button(fen , text = "   A*   ", command = lambda   g= graphe :applyAStar(g))
+d = Button(fen , text = "DijkstraV2", command = lambda   g= graphe :applyDijkstraV2(g))
 
  
 # Placer le bouton sur la fenêtre
 b.pack()
 c.pack()
+d.pack()
 
 graphe.dessinGraphe(can, "grey50")
 
