@@ -338,8 +338,7 @@ class Graphe:
         explore.append(source)
 
         # Exploration
-        while (listeCandidat != []):
-            #Choisir xi appartenant au candidat de (di + Deuclid(i, destination)) minimum 
+        while (listeCandidat != []): 
             min = sys.maxsize
             indiceMin = sys.maxsize
             for ind in listeCandidat:
@@ -365,51 +364,47 @@ class Graphe:
             if (xi==dest):
                 return (self.reconstruitChemin(cheminTmp, source, dest), explore)
 
-     def DijkstraV2(self, source, dest) :
+
+     def DijkstraV2(self, source, dest) : #dijkstra utilisant le danger au lieu de la distance
          # Initialisation
-        distance=[]
-        explore=[]
-        cheminTmp=[]
-        listeCandidat=[]
-
-        for noeud in self.listeNoeud:
-            indNoeud = noeud.indice
-            distance.append(sys.maxsize)
-            cheminTmp.append(sys.maxsize)
-        
-        distance[source]=0
-        cheminTmp[source]=source
-        listeCandidat.append(source)
-        explore.append(source)
-
-        # Exploration
-        while (listeCandidat != []):
-            #Choisir xi appartenant au candidat de (di + Deuclid(i, destination)) minimum 
-            min = sys.maxsize
-            indiceMin = sys.maxsize
-            for ind in listeCandidat:
-                if (distance[ind]<min):
-                    min = distance[ind]
-                    indiceMin = ind
-            xi = indiceMin
-            #append xi à S
-            explore.append(xi)
-            #Retirer xi de Candidat
-            listeCandidat.remove(xi)
-            #Pour tout xj appartenant au candidat successeur de xi 	
-            for arc in self.listeNoeud[xi].listeArcSucc:
-                xj = arc.indDest
-                #si dj = infini ajouter xj à Candidat
-                if (distance[xj]==sys.maxsize):
-                    listeCandidat.append(xj)
-                #dj = min (dj, di+d(xi,xj))
-                if (distance[xj]>distance[xi]+arc.longueur):
-                    distance[xj]=distance[xi]+arc.longueur
-                    cheminTmp[xj]=xi
-            #chemin
-            if (xi==dest):
-                return (self.reconstruitChemin(cheminTmp, source, dest), explore)    
-         
+            danger=[]
+            explore=[]
+            cheminTmp=[]
+            listeCandidat=[]
+            for noeud in self.listeNoeud:
+                indNoeud = noeud.indice
+                danger.append(sys.maxsize)
+                cheminTmp.append(sys.maxsize)
+            danger[source]=0
+            cheminTmp[source]=source
+            listeCandidat.append(source)
+            explore.append(source)
+            # Exploration
+            while (listeCandidat != []): 
+                min = sys.maxsize
+                indiceMin = sys.maxsize
+                for ind in listeCandidat:
+                    if (danger[ind]<min):
+                        min = danger[ind]
+                        indiceMin = ind
+                xi = indiceMin
+                #append xi à S
+                explore.append(xi)
+                #Retirer xi de Candidat
+                listeCandidat.remove(xi)
+                #Pour tout xj appartenant au candidat successeur de xi 	
+                for arc in self.listeNoeud[xi].listeArcSucc:
+                    xj = arc.indDest
+                    #si dj = infini ajouter xj à Candidat
+                    if (danger[xj]==sys.maxsize):
+                        listeCandidat.append(xj)
+                    #dj = min (dj, di+d(xi,xj))
+                    if (danger[xj]>danger[xi]+arc.danger):
+                        danger[xj]=danger[xi]+arc.danger
+                        cheminTmp[xj]=xi
+                #chemin
+                if (xi==dest):
+                    return (self.reconstruitChemin(cheminTmp, source, dest), explore)
          
      
 
