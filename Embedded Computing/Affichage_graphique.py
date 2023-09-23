@@ -23,18 +23,16 @@ def Affiche_mesure (self, x, y, mesure, mesure_prec, unite mesure, format str, c
 
 
 from PIL import Image, ImageDraw, ImageFont
-import adafruit_touchscreen
+import adafruit_rgb_display.ili9341 
 import board
 import ili9341
+import xpt2046
 
 #Compléter le code du module Affichage_Graphique.py avec l’écriture des fonctions :
 #- Tableau_ecran_2 : pour afficher le tableau des valeurs min et max de température, humidité, Index Cov et taux de CO2, ainsi que l’échelle du rétroéclairage avec le niveau courant, et un bouton Reset pour provoquer ultérieurement la mise à jour des valeurs du tableau ;
 #- Bouton : pour afficher un bouton avec une légende et une couleur de fond ;
 #- Echelle_choix_RetroEclairage : pour afficher sur l’écran TFT l’échelle des niveaux de luminosité du rétroéclairage et visualiser le niveau courant.
-temp=BME280.read_temp()
-hum=BME280.read_humidity()
-cov=sgp40_capteur_cov.measure_index(temp, hum)
-co2=capteur_SCD41.CO2
+
 
 
 def tableau_ecran_2(temp, hum, cov, co2):
@@ -78,8 +76,7 @@ def tableau_ecran_2(temp, hum, cov, co2):
 def Bouton():
     ImageDraw.rectangle((0, 102, 30, 124), fill=(255,0,0), outline=255)
     ImageDraw.text((2, 102), "Reset", font=unispace, fill=255)
-    ts = adafruit_touchscreen.Touchscreen(board.TOUCH_XL, board.TOUCH_XR,
-                      board.TOUCH_YD, board.TOUCH_YU)
+    ts = xpt2046.get_touch()
     while True:
         p = ts.touch_point
         if p:
@@ -104,12 +101,11 @@ def Echelle_choix_Retroeclairage():
     ImageDraw.rectangle((140, 102, 160, 124), fill=50, outline=255)
 
     # Turn on the Backlight
-    backlight = DigitalInOut(board.D26)
+    backlight = adafruit_rgb_display.DigitalInOut(board.D26)
     backlight.switch_to_output()
     backlight.value = True
 
-    ts = adafruit_touchscreen.Touchscreen(board.TOUCH_XL, board.TOUCH_XR,
-                      board.TOUCH_YD, board.TOUCH_YU)
+    ts = xpt2046.get_touch()
 
     while True:
         p = ts.touch_point
