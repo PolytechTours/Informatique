@@ -310,6 +310,12 @@ class Graphe:
          for indNoeud in cheminNoeud : 
              noeud= self.listeNoeud[indNoeud]
              noeud.dessinNoeud(self, can, color)
+    
+     def dessinCheminNoeud2(self, can, cheminNoeud, color) :
+         for indNoeud in cheminNoeud :
+             for i in indNoeud :
+                    noeud= self.listeNoeud[i]
+                    noeud.dessinNoeud(self, can, color)
 
     # ---------------------------------------------------------------
     # Algorithme Dijkstra - V1
@@ -405,8 +411,104 @@ class Graphe:
                 #chemin
                 if (xi==dest):
                     return (self.reconstruitChemin(cheminTmp, source, dest), explore)
-         
+        
+     def DijkstraV3(self, source, dest, alpha) : #utilisant un alpha gerant le poids du danger tel que alpha*distance + (1-alpha)*danger
+        # Initialisation
+        distance=[]
+        explore=[]
+        cheminTmp=[]
+        listeCandidat=[]
+        for noeud in self.listeNoeud:
+            indNoeud = noeud.indice
+            distance.append(sys.maxsize)
+            cheminTmp.append(sys.maxsize)
+        distance[source]=0
+        cheminTmp[source]=source
+        listeCandidat.append(source)
+        explore.append(source)
+        # Exploration
+        while (listeCandidat != []): 
+            min = sys.maxsize
+            indiceMin = sys.maxsize
+            for ind in listeCandidat:
+                if (distance[ind]<min):
+                    min = distance[ind]
+                    indiceMin = ind
+            xi = indiceMin
+            #append xi à S
+            explore.append(xi)
+            #Retirer xi de Candidat
+            listeCandidat.remove(xi)
+            #Pour tout xj appartenant au candidat successeur de xi 	
+            for arc in self.listeNoeud[xi].listeArcSucc:
+                xj = arc.indDest
+                #si dj = infini ajouter xj à Candidat
+                if (distance[xj]==sys.maxsize):
+                    listeCandidat.append(xj)
+                #dj = min (dj, di+d(xi,xj))
+                if (distance[xj]>distance[xi]+alpha*arc.longueur+(1-alpha)*arc.danger):
+                    distance[xj]=distance[xi]+alpha*arc.longueur+(1-alpha)*arc.danger
+                    cheminTmp[xj]=xi
+            #chemin
+            if (xi==dest):
+                return (self.reconstruitChemin(cheminTmp, source, dest), explore)
+    
+    
      
+     def DijkstraV4(self, source, dest) :
+        # Initialisation
+        distance = []
+        explore = []
+        cheminTmp = []
+        listeCandidat = []
+        etiquette = 0
+        distanceEuclidienne = self.distanceEuclidienne(source, dest)
+        for noeud in self.listeNoeud:
+            indNoeud = noeud.indice
+            distance.append(sys.maxsize)
+            cheminTmp.append(sys.maxsize)
+        distance[source] = 0
+        cheminTmp[source] = source
+        listeCandidat.append((etiquette, 0, 0, source, None))
+        explore.append(source)
+        # Exploration
+        while (listeCandidat != []): 
+            minDistance = sys.maxsize
+            minDanger = sys.maxsize
+            indiceMin = sys.maxsize
+            for ind, etiq in enumerate(listeCandidat):
+                if (etiq[1] <= minDistance and etiq[2] <= minDanger):
+                    minDistance = etiq[1]
+                    minDanger = etiq[2]
+                    indiceMin = ind
+            xi = listeCandidat[indiceMin][3]
+            #append xi à S
+            explore.append(xi)
+            #Retirer xi de Candidat
+            listeCandidat.pop(indiceMin)
+            #Pour tout xj appartenant au candidat successeur de xi 	
+            for arc in self.listeNoeud[xi].listeArcSucc:
+                xj = arc.indDest
+                #si dj = infini ajouter xj à Candidat
+                if (distance[xj] == sys.maxsize and self.distanceEuclidienne(xj, dest) <= distanceEuclidienne):
+                    etiquette += 1
+                    listeCandidat.append((etiquette, distance[xi] + arc.longueur, arc.danger, xj, indiceMin))
+                #dj = min (dj, di+d(xi,xj))
+                if (distance[xj] > distance[xi] + arc.longueur and self.distanceEuclidienne(xj, dest) <= distanceEuclidienne):
+                    distance[xj] = distance[xi] + arc.longueur
+                    cheminTmp[xj] = xi
+                    etiquette += 1
+                    listeCandidat.append((etiquette, distance[xj], arc.danger, xj, indiceMin))
+            #chemin
+            if (xi == dest):
+                chemins = []
+                for etiq in listeCandidat:
+                    #if (etiq[1] == minDistance and etiq[2] == minDanger):
+                        chemins.append(self.reconstruitChemin(cheminTmp, source, etiq[3]))
+                #chemins.append(self.reconstruitChemin(cheminTmp, source, dest))
+                print(chemins)
+                return (chemins, explore)
+
 
     # ---------------------------------------------------------------
     # Algorithme ASTAR
@@ -572,7 +674,6 @@ def applyDijkstra(graphe) :
     noeudCible = graphe.listeNoeud[Source]
     noeudCible.dessinNoeudHuge(graphe, can, "purple")
 
-
 def applyDijkstraV2(graphe) : #trace le chemin deux fois, une fois pour le danger et une fois pour la distance
     print("ok")
 
@@ -603,7 +704,106 @@ def applyDijkstraV2(graphe) : #trace le chemin deux fois, une fois pour le dange
     noeudCible.dessinNoeudHuge(graphe, can, "green")
     noeudCible = graphe.listeNoeud[Source]
     noeudCible.dessinNoeudHuge(graphe, can, "purple")
+
+def applyDijkstraV3(graphe) : #trace le chemin 10 fois, en faisant varier alpha de 0 à 1 par pas de 0.1
+    print("ok")
+
+    global Source
+    global Destination
+    global alpha
+
+    # calcul du chemin
+    result= graphe.DijkstraV3(Source, Destination, 0)
+    print("============ Calcul Chemin OK ================")
+    chemin = result[0]    # chemin non formaté
+    explore = result[1]
+    print('CHEMIN DISKSTRA', chemin)
+    can.delete(ALL)
+    graphe.dessinGraphe(can, "grey50")
+    graphe.dessinCheminNoeud(can, explore, "yellow")
+    graphe.dessinCheminNoeud(can, chemin, "red")
+    noeudCible = graphe.listeNoeud[Destination]
+    noeudCible.dessinNoeudHuge(graphe, can, "green")
+    noeudCible = graphe.listeNoeud[Source]
+    noeudCible.dessinNoeudHuge(graphe, can, "purple")
+
+    result1= graphe.DijkstraV3(Source, Destination, 0.2)
+    print("============ Calcul Chemin OK ================")
+    chemin1 = result1[0]    # chemin non formaté
+    print('CHEMIN DISKSTRA', chemin1)
+    graphe.dessinCheminNoeud(can, chemin1, "blue")
+    noeudCible = graphe.listeNoeud[Destination]
+    noeudCible.dessinNoeudHuge(graphe, can, "green")
+    noeudCible = graphe.listeNoeud[Source]
+    noeudCible.dessinNoeudHuge(graphe, can, "purple")
+
+    result2= graphe.DijkstraV3(Source, Destination, 0.4)
+    print("============ Calcul Chemin OK ================")
+    chemin2 = result2[0]    # chemin non formaté
+    print('CHEMIN DISKSTRA', chemin2)
+    graphe.dessinCheminNoeud(can, chemin2, "orange")
+    noeudCible = graphe.listeNoeud[Destination]
+    noeudCible.dessinNoeudHuge(graphe, can, "green")
+    noeudCible = graphe.listeNoeud[Source]
+    noeudCible.dessinNoeudHuge(graphe, can, "purple")
+
+    result3= graphe.DijkstraV3(Source, Destination, 0.6)
+    print("============ Calcul Chemin OK ================")
+    chemin3 = result3[0]    # chemin non formaté
+    print('CHEMIN DISKSTRA', chemin3)
+    graphe.dessinCheminNoeud(can, chemin3, "pink")
+    noeudCible = graphe.listeNoeud[Destination]
+    noeudCible.dessinNoeudHuge(graphe, can, "green")
+    noeudCible = graphe.listeNoeud[Source]
+    noeudCible.dessinNoeudHuge(graphe, can, "purple")
+
+    result4= graphe.DijkstraV3(Source, Destination, 0.8)
+    print("============ Calcul Chemin OK ================")
+    chemin4 = result4[0]    # chemin non formaté
+    print('CHEMIN DISKSTRA', chemin4)
+    graphe.dessinCheminNoeud(can, chemin4, "purple")
+    noeudCible = graphe.listeNoeud[Destination]
+    noeudCible.dessinNoeudHuge(graphe, can, "green")
+    noeudCible = graphe.listeNoeud[Source]
+    noeudCible.dessinNoeudHuge(graphe, can, "purple")
+
+    result5= graphe.DijkstraV3(Source, Destination, 1)
+    print("============ Calcul Chemin OK ================")
+    chemin5 = result5[0]    # chemin non formaté
+    print('CHEMIN DISKSTRA', chemin5)
+    graphe.dessinCheminNoeud(can, chemin5, "black")
+    noeudCible = graphe.listeNoeud[Destination]
+    noeudCible.dessinNoeudHuge(graphe, can, "green")
+    noeudCible = graphe.listeNoeud[Source]
+    noeudCible.dessinNoeudHuge(graphe, can, "purple")
+
+
+def ApplyDijkstraV4(graphe) : 
+    print("ok")
+
+    global Source
+    global Destination
+
+    # calcul du chemin 
+    result= graphe.DijkstraV4(Source, Destination)
+    print("============ Calcul Chemin OK ================")
     
+    can.delete(ALL)
+    graphe.dessinGraphe(can, "grey50")
+    
+ 
+    explore = result[1]
+    graphe.dessinCheminNoeud(can, explore, "yellow")
+    for i in result[0]:
+        chemin = i    # chemin non formaté
+        graphe.dessinCheminNoeud(can, chemin, "red")
+    print('CHEMIN DISKSTRA', chemin)
+    noeudCible = graphe.listeNoeud[Destination]
+    noeudCible.dessinNoeudHuge(graphe, can, "green")
+    noeudCible = graphe.listeNoeud[Source]
+    noeudCible.dessinNoeudHuge(graphe, can, "purple")
+
+
 
 # recupere le noeud source et le noeud dest
 # lance A* 
@@ -655,12 +855,16 @@ can.bind("<Button-3>", lambda event, g = graphe :callback2(event, g))
 b = Button(fen , text = "Dijkstra", command = lambda   g= graphe :applyDijkstra(g))
 c = Button(fen , text = "   A*   ", command = lambda   g= graphe :applyAStar(g))
 d = Button(fen , text = "DijkstraV2", command = lambda   g= graphe :applyDijkstraV2(g))
+e = Button(fen , text = "DijkstraV3", command = lambda   g= graphe :applyDijkstraV3(g))
+f = Button(fen , text = "DijkstraV4", command = lambda   g= graphe :ApplyDijkstraV4(g))
 
  
 # Placer le bouton sur la fenêtre
 b.pack()
 c.pack()
 d.pack()
+e.pack()
+f.pack()
 
 graphe.dessinGraphe(can, "grey50")
 
