@@ -310,12 +310,6 @@ class Graphe:
          for indNoeud in cheminNoeud : 
              noeud= self.listeNoeud[indNoeud]
              noeud.dessinNoeud(self, can, color)
-    
-     def dessinCheminNoeud2(self, can, cheminNoeud, color) :
-         for indNoeud in cheminNoeud :
-             for i in indNoeud :
-                    noeud= self.listeNoeud[i]
-                    noeud.dessinNoeud(self, can, color)
 
     # ---------------------------------------------------------------
     # Algorithme Dijkstra - V1
@@ -414,6 +408,7 @@ class Graphe:
         
      def DijkstraV3(self, source, dest, alpha) : #utilisant un alpha gerant le poids du danger tel que alpha*distance + (1-alpha)*danger
         # Initialisation
+        distanceEuclidienne=self.distanceEuclidienne(source, dest)
         distance=[]
         explore=[]
         cheminTmp=[]
@@ -443,10 +438,10 @@ class Graphe:
             for arc in self.listeNoeud[xi].listeArcSucc:
                 xj = arc.indDest
                 #si dj = infini ajouter xj à Candidat
-                if (distance[xj]==sys.maxsize):
+                if (distance[xj]==sys.maxsize and self.distanceEuclidienne(xj, dest) <= distanceEuclidienne):
                     listeCandidat.append(xj)
                 #dj = min (dj, di+d(xi,xj))
-                if (distance[xj]>distance[xi]+alpha*arc.longueur+(1-alpha)*arc.danger):
+                if (distance[xj]>distance[xi]+alpha*arc.longueur+(1-alpha)*arc.danger and self.distanceEuclidienne(xj, dest) <= distanceEuclidienne):
                     distance[xj]=distance[xi]+alpha*arc.longueur+(1-alpha)*arc.danger
                     cheminTmp[xj]=xi
             #chemin
