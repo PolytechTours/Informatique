@@ -1,11 +1,10 @@
-creer une fonction DijkstraV4 appartenant a la classe graphe qui fonctionne comme suit :
 - on part du noeud source
-- on calcule la distance euclidienne entre le noeud source et destination
-- on n'explorera pas les noeuds depassant cette distance
+- on calcule la distance euclidienne entre le noeud source et la destination
+- on n'explorera pas les noeuds depassant cette distance :
 - on donne une etiquette a tout les noeuds candidats comprenant (l'indice de l'etiquette, distance, danger, noeud, l'indice de l'etiquette precedente)
-- on prend alors l'etiquette non dominee avec la distance la plus courte ainsi que l'etiquette non dominee avec le danger le plus petit
+- on prend toutes les etiquettes non dominees
 (on definit une etiquette dominee comme une etiquette ayant la plus grande distance et le plus grand danger parmi les candidats)
-- on se situe sur le noeud correspondant et on donne une etiquette aux noeuds nouvellement candidats
+- pour toutes les etiquettes choisies on se situe sur le noeud correspondant et on donne une etiquette aux noeuds nouvellement candidats sans faire de doublons
 - on avance ainsi
 - une fois arriver a la destination
-- on retrace les chemins non dominees candidats
+- on retrace les chemins candidats 

@@ -449,61 +449,82 @@ class Graphe:
                 return (self.reconstruitChemin(cheminTmp, source, dest), explore)
     
     
-     
-     def DijkstraV4(self, source, dest) :
-        # Initialisation
-        distance = []
-        explore = []
-        cheminTmp = []
-        listeCandidat = []
-        etiquette = 0
-        distanceEuclidienne = self.distanceEuclidienne(source, dest)
-        for noeud in self.listeNoeud:
-            indNoeud = noeud.indice
-            distance.append(sys.maxsize)
-            cheminTmp.append(sys.maxsize)
-        distance[source] = 0
-        cheminTmp[source] = source
-        listeCandidat.append((etiquette, 0, 0, source, None))
-        explore.append(source)
-        # Exploration
-        while (listeCandidat != []): 
-            minDistance = sys.maxsize
-            minDanger = sys.maxsize
-            indiceMin = sys.maxsize
-            for ind, etiq in enumerate(listeCandidat):
-                if (etiq[1] <= minDistance and etiq[2] <= minDanger):
-                    minDistance = etiq[1]
-                    minDanger = etiq[2]
-                    indiceMin = ind
-            xi = listeCandidat[indiceMin][3]
-            #append xi à S
-            explore.append(xi)
-            #Retirer xi de Candidat
-            listeCandidat.pop(indiceMin)
-            #Pour tout xj appartenant au candidat successeur de xi 	
-            for arc in self.listeNoeud[xi].listeArcSucc:
-                xj = arc.indDest
-                #si dj = infini ajouter xj à Candidat
-                if (distance[xj] == sys.maxsize and self.distanceEuclidienne(xj, dest) <= distanceEuclidienne):
-                    etiquette += 1
-                    listeCandidat.append((etiquette, distance[xi] + arc.longueur, arc.danger, xj, indiceMin))
-                #dj = min (dj, di+d(xi,xj))
-                if (distance[xj] > distance[xi] + arc.longueur and self.distanceEuclidienne(xj, dest) <= distanceEuclidienne):
-                    distance[xj] = distance[xi] + arc.longueur
-                    cheminTmp[xj] = xi
-                    etiquette += 1
-                    listeCandidat.append((etiquette, distance[xj], arc.danger, xj, indiceMin))
-            #chemin
-            if (xi == dest):
-                chemins = []
-                for etiq in listeCandidat:
-                    #if (etiq[1] == minDistance and etiq[2] == minDanger):
-                        chemins.append(self.reconstruitChemin(cheminTmp, source, etiq[3]))
-                #chemins.append(self.reconstruitChemin(cheminTmp, source, dest))
-                print(chemins)
-                return (chemins, explore)
+     def DijkstraV4(self, source, dest):
+            # Initialisation
+            distanceEuclidienne = self.distanceEuclidienne(source, dest)
+            distance = [sys.maxsize] * len(self.listeNoeud)
+            danger = [sys.maxsize] * len(self.listeNoeud)
+            explore = []
+            cheminTmp = [sys.maxsize] * len(self.listeNoeud)
+            listeCandidat = [[0, 0, 0, source, -1]]
+            etiquettes = []
+            chemins = []
 
+            # Exploration
+            while listeCandidat:
+                # Récupération de l'étiquette non dominée avec la plus petite distance
+                min_distance = sys.maxsize
+                min_danger = sys.maxsize
+                min_index = -1
+                for i, etiquette in enumerate(listeCandidat):
+                    if etiquette[1] < min_distance or (etiquette[1] == min_distance and etiquette[2] < min_danger):
+                        min_distance = etiquette[1]
+                        min_danger = etiquette[2]
+                        min_index = i
+                etiquette = listeCandidat.pop(min_index)
+
+                # Si le noeud est exploré, on passe à l'étiquette suivante
+                if etiquette[3] in explore:
+                    continue
+
+                # Si le noeud est trop éloigné de la destination, on passe à l'étiquette suivante
+                if self.distanceEuclidienne(etiquette[3], dest) > distanceEuclidienne:
+                    continue
+
+                # Ajout de l'étiquette à la liste des étiquettes non dominées
+                for e in etiquettes:
+                    if e[1] > etiquette[1] and e[2] > etiquette[2]:
+                        break
+                else:
+                    etiquettes.append(etiquette)
+
+                # Si on est arrivé à la destination, on ajoute le chemin à la liste des chemins candidats
+                if etiquette[3] == dest:
+                    chemins.append(self.reconstruitChemin(cheminTmp, source, dest))
+                    continue
+
+                # Exploration des arcs successeurs
+                for arc in self.listeNoeud[etiquette[3]].listeArcSucc:
+                    xj = arc.indDest
+                    # Si le noeud est déjà exploré, on passe à l'arc suivant
+                    if xj in explore:
+                        continue
+                    # Si le noeud est trop éloigné de la destination, on passe à l'arc suivant
+                    if self.distanceEuclidienne(xj, dest) > distanceEuclidienne:
+                        continue
+                    # Calcul de la distance et du danger de l'étiquette suivante
+                    distance_suiv = etiquette[1] + arc.longueur
+                    danger_suiv = etiquette[2] + arc.danger
+                    # Ajout de l'étiquette suivante à la liste des candidats
+                    etiquette_suiv = [len(etiquettes), distance_suiv, danger_suiv, xj, etiquette[0]]
+                    # Si l'étiquette suivante est déjà dans la liste des candidats, on garde la plus petite distance et le plus petit danger
+                    for i, e in enumerate(listeCandidat):
+                        if e[3] == xj and e[1] > distance_suiv and e[2] > danger_suiv:
+                            listeCandidat[i] = etiquette_suiv
+                            break
+                    else:
+                        listeCandidat.append(etiquette_suiv)
+                    # Mise à jour du chemin temporaire
+                    cheminTmp[xj] = etiquette[3]
+
+                # Ajout du noeud exploré à la liste des noeuds explorés
+                explore.append(etiquette[3])
+
+            # Retourne le chemin le plus court
+            print(chemins, len(chemins))
+            return (chemins, explore) if chemins else None
+        
+            
 
     # ---------------------------------------------------------------
     # Algorithme ASTAR
@@ -785,8 +806,6 @@ def ApplyDijkstraV4(graphe) :
     
     can.delete(ALL)
     graphe.dessinGraphe(can, "grey50")
-    
- 
     explore = result[1]
     graphe.dessinCheminNoeud(can, explore, "yellow")
     for i in result[0]:
