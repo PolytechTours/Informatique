@@ -1,1 +1,1 @@
-Merci les gars, vou gérez !
+Merci les gars, vous gérez !
