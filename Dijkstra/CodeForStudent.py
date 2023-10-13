@@ -9,6 +9,7 @@ import sys
 from random import *
 import math     # fonction trigo pour conversion en coordonnées cartésienne
 from collections import OrderedDict
+import folium
 
 # --------------------------------------------------------------------------------------------
 #      VARIABLES GLOBALES
@@ -39,6 +40,7 @@ Destination = 0
 
 # Permet de stocker mapper les noeud avec les cercles qui sont leur représentation graphie pour les retrouver suite à unclick de la souris
 MappageNoeud = OrderedDict()
+Noeuds = []
 
 # --------------------------------------------------------------------------
 #   Classe d'un arc
@@ -171,6 +173,7 @@ class Graphe:
     # ---------------------------------------------------------------   
      def lectureNoeud(self, chemin): 
          #ouverture du fichier
+         global Noeuds
          fichier = open(chemin, 'r')
          listeNoeud  = fichier.readlines()
 
@@ -193,6 +196,8 @@ class Graphe:
             noeud = Noeud(indNoeud, long, lat)
 
             self.addNoeud(noeud)
+            Noeuds.append([indNoeud, float(stringLong), float(stringLat)])
+
         
          #femeture du fichier 
          fichier.close()
@@ -817,6 +822,20 @@ def ApplyDijkstraV4(graphe) :
     noeudCible = graphe.listeNoeud[Source]
     noeudCible.dessinNoeudHuge(graphe, can, "purple")
 
+    m = folium.Map(location=[48.856578, 2.351828], zoom_start=12, tiles='Stamen Terrain')
+    coordinates = []
+
+    for i in chemin:
+        noeud = Noeuds[i]
+        if(i < len(chemin)-1):
+            nextNoeud = Noeuds[chemin[i+1]]
+        folium.Marker([noeud[2], noeud[1]], popup = str(i)).add_to(m)
+        coordinates.append([noeud[2], noeud[1]])
+
+    folium.PolyLine(coordinates, color="red", weight=2.5, opacity=1).add_to(m)
+
+    m.save('map.html')
+
 
 
 # recupere le noeud source et le noeud dest
@@ -843,6 +862,32 @@ def applyAStar(graphe) :
     noeudCible = graphe.listeNoeud[Source]
     noeudCible.dessinNoeudHuge(graphe, can, "purple")
 
+    m = folium.Map(location=[52.509, 13.2718], zoom_start=12, tiles='Stamen Terrain')
+    coordinates = []
+
+    group_1 = folium.FeatureGroup(name='Chemin Noeuds').add_to(m)
+    group_1_bis = folium.FeatureGroup(name='Chemin Arcs').add_to(m)
+    group_2 = folium.FeatureGroup(name='Explorés Noeuds').add_to(m)
+
+    for i in chemin:
+        noeud = Noeuds[i]
+        if(i < len(chemin)-1):
+            nextNoeud = Noeuds[chemin[i+1]]
+        #folium.Marker([noeud[2], noeud[1]], popup = str(i)).add_to(group_1)
+        folium.vector_layers.Circle([noeud[2], noeud[1]], radius=5, color='red', fill_color='red').add_to(group_1)
+        coordinates.append([noeud[2], noeud[1]])
+
+    for i in explore:
+        noeud = Noeuds[i]
+        #folium.Marker([noeud[2], noeud[1]], popup = str(i)).add_to(group_2)
+        folium.vector_layers.Circle([noeud[2], noeud[1]], radius=5, color='yellow', fill_color='yellow').add_to(group_2)
+
+    folium.PolyLine(coordinates, color="red", weight=2.5, opacity=1).add_to(group_1_bis)
+
+    folium.LayerControl().add_to(m)
+
+    m.save('map.html')
+
 
 # --------------------------------------------------------------------------------------------
 #   PROGRAMME PRINCIPAL
@@ -850,8 +895,8 @@ def applyAStar(graphe) :
 
 # definition du graphe Paris
 graphe = Graphe()
-nomFichierNoeud ="./graphes/paris_noeuds.csv"
-nomFichierArc ="./graphes/paris_arcs.csv"
+nomFichierNoeud ="./graphes/berlin_noeuds.csv"
+nomFichierArc ="./graphes/berlin_arcs.csv"
 
 # lecture noeud Paris
 graphe.lectureNoeud(nomFichierNoeud)
@@ -883,6 +928,9 @@ f.pack()
 graphe.dessinGraphe(can, "grey50")
 
 can.pack()
-fen.mainloop()
+#fen.mainloop()
 
-#lectureArc(nomFichierArc, G)
+#lectureArc(nomFichierArc, G) 
+Source = 0 
+Destination = 180
+applyAStar(graphe)
