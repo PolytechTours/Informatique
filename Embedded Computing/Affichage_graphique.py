@@ -33,7 +33,7 @@ CO2_MAX = const(4000)
 
 # Ecran 1
 # Définition de constantes symboliques liées à la mise en forme de l'écran 1
-Display1=Display(spi_tft, dc = TFT_DC_pin, cs = SPI_CS_pin, rst = TFT_RESET_pin, rotation = 90)
+tft = ili9341.Display(spi_tft, dc = TFT_DC_pin, cs = SPI_CS_pin, rst = TFT_RESET_pin, rotation = 90)
 # A compléter selon besoins
 
 
