@@ -1,0 +1,10 @@
+{
+	"folders": [
+		{
+			"path": "Embedded Computing"
+		}
+	],
+	"settings": {
+		"python.languageServer": "Pylance"
+	}
+}
