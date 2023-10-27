@@ -1,14 +1,12 @@
-from machine import Pin, I2C, SPI
-import time
-from ConfigMateriel_pico import *
-from micropython import const
+from machine import Pin, PWM, Timer, I2C
+from ConfigMateriel_pico import*
 from BME280 import *
 from SCD41 import *
 from adafruit_sgp40 import *
-from ConfigMateriel_pico import *
-from ILI9341 import *
-from xglcd_font import *
-from Affichage_Graphique import *
+import machine
+import time
+from ILI9341 import ili9341
+from ILI9341 import xglcd_font
 
 
 #Led_25 = Pin (Led_Pin_25, Pin.OUT)
@@ -239,29 +237,7 @@ from Affichage_Graphique import *
 
 
 #Synthese 7 :
-spi_tft = SPI(0)
-def __init__(self, spi, cs, dc, rst,
- width=240, height=320, rotation=0):
-    """Initialize OLED.
-     Args:
-     spi (Class Spi): SPI interface for OLED
-     cs (Class Pin): Chip select pin
-     dc (Class Pin): Data/Command pin
-     rst (Class Pin): Reset pin
-     width (Optional int): Screen width (default 240)
-     height (Optional int): Screen height (default 320)
-     rotation (Optional int): Rotation must be 0 default, 90. 180 or 270
-     """
 
-tft = Display(spi_tft, dc = TFT_DC_pin, cs = SPI_CS_pin, rst = TFT_RESET_pin, rotation = 90)
-tft.clear()
-
-print('Loading fonts...')
-print('Loading unispace')
-unispace = XglcdFont("fonts/Unispace12x24.c", 12, 24)
-print('Loading unispaceExt')
-unispaceExt = XglcdFont("fonts/UnispaceExt12x24.c", 12, 24, letter_count=224)
-print('Fonts loaded.')
 
 #: écrire le programme qui permet :
 #- D’afficher les éléments du fond de l’écran 1 et de valider leur mise en forme ;
@@ -270,6 +246,11 @@ print('Fonts loaded.')
 i2c=I2C(0, sda=SDA_pin, scl=SCL_pin, freq=Freq_i2c)
 adr=i2c.scan()
 print('Adresse peripherique I2C :', adr)
+
+spi_tft = machine.SPI(0)
+
+tft = ili9341.Display(spi_tft, dc = TFT_DC_pin, cs = SPI_CS_pin, rst = TFT_RESET_pin, rotation = 90)
+tft.clear()
 
 Id_BME280 = i2c.readfrom_mem(BME280_I2C_ADR, BME280_CHIP_ID_ADDR, 1)
 print ('Valeur Id_BME280 : ', hex (Id_BME280[0]))
@@ -287,28 +268,36 @@ capteur_SCD41.start_periodic_measurement()
 
 sgp40_capteur_cov = SGP40 (i2c)
 print("SGP40 Serial number :", [hex(i) for i in sgp40_capteur_cov._serial_number])
+
+print('Loading fonts...')
+print('Loading unispace')
+unispace = xglcd_font.XglcdFont('fonts/Unispace12x24.c', 12, 24)
+print('Loading unispaceExt')
+unispaceExt = xglcd_font.XglcdFont('fonts/UnispaceExt12x24.c', 12, 24, letter_count=224)
+print('Fonts loaded.')
+
 voc_index = sgp40_capteur_cov.measure_index(capteur_BME280.read_temp(), capteur_BME280.read_humidity())
 
-Display1=Display(spi_tft, dc = TFT_DC_pin, cs = SPI_CS_pin, rst = TFT_RESET_pin, rotation = 90)
+tft.draw_text(100, 100, "Hello world", unispace, const (0x8425), background_flag = True, background=0, landscape = False, spacing = 1)
 
 def callback_SCD41 (timer):
     if capteur_SCD41.data_ready: # attendre qu'une mesure soit disponible
         co2 = capteur_SCD41.CO2
         # Affichage des mesures SCD41
-        Display1.draw_text(50, 70, "CO2 : %d ppm" % co2, unispace, ili9341.color565(255, 255, 255),  background=0,)
+        tft.draw_text(50, 70, "CO2 : %d ppm" % co2, unispace, ili9341.color565(255, 255, 255),  background=0,)
     else:
         print("No data available")
     
 def callback_BME280():
-    Display1.draw_text(50, 10, "Temperature : %.2f °C" % capteur_BME280.read_temp(), unispace, color565(255, 255, 255),  background=0)
-    Display1.draw_text(50, 30, "Pression : %.2f hPa" % capteur_BME280.read_pression(), unispace, color565(255, 255, 255),  background=0)
-    Display1.draw_text(50, 50, "Humidite : %.2f" % capteur_BME280.read_humidity(), unispace, color565(255, 255, 255),  background=0)
+    tft.draw_text(50, 10, "Temperature : %.2f °C" % capteur_BME280.read_temp(), unispace, ili9341.color565(255, 255, 255),  background=0)
+    tft.draw_text(50, 30, "Pression : %.2f hPa" % capteur_BME280.read_pression(), unispace, ili9341.color565(255, 255, 255),  background=0)
+    tft.draw_text(50, 50, "Humidite : %.2f" % capteur_BME280.read_humidity(), unispace, ili9341.color565(255, 255, 255),  background=0)
 
 def callback_SGP40():
     voc_index = sgp40_capteur_cov.measure_index(capteur_BME280.read_temp(), capteur_BME280.read_humidity())
-    Display1.draw_text(50, 90, "COV_index : %d" % voc_index, unispace, color565(255, 255, 255),  background=0,)
+    tft.draw_text(50, 90, "COV_index : %d" % voc_index, unispace, ili9341.color565(255, 255, 255),  background=0,)
 
-#Affichage_Graphique.fond_ecran_1()
+Affichage_Graphique.fond_ecran_1()
 
 id=0
 while True:
