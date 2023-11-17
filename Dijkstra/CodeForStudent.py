@@ -325,7 +325,7 @@ class Graphe:
     # ---------------------------------------------------------------
     # entrée : noeud source, noeud dest, graphe
     # sortie : (tableau des pred noeuds du chemin, liste des indices des noeuds explorés)
-     def DijkstraV1(self, source, dest) :
+     def DijkstraV1(self, source, dest) : #Version la plus simple de l'algorithme de Dijkstra, utilisant la distance comme critère de choix du prochain noeud à explorer
          # Initialisation
         distance=[]
         explore=[]
@@ -370,7 +370,7 @@ class Graphe:
                 return (self.reconstruitChemin(cheminTmp, source, dest), explore)
 
 
-     def DijkstraV2(self, source, dest) : #dijkstra utilisant le danger au lieu de la distance
+     def DijkstraV1_2(self, source, dest) : #Modification de la version la plus simple de l'algorithme de Dijkstra, utilisant le danger au lieu de la distance comme critère de choix du prochain noeud à explorer
          # Initialisation
             danger=[]
             explore=[]
@@ -411,7 +411,7 @@ class Graphe:
                 if (xi==dest):
                     return (self.reconstruitChemin(cheminTmp, source, dest), explore)
         
-     def DijkstraV3(self, source, dest, alpha) : #utilisant un alpha gerant le poids du danger tel que alpha*distance + (1-alpha)*danger
+     def DijkstraV2(self, source, dest, alpha) : #Version de l'algorithme de Dijkstra utilisant un alpha gerant le poids du danger tel que alpha*distance + (1-alpha)*danger
         # Initialisation
         distanceEuclidienne=self.distanceEuclidienne(source, dest)
         distance=[]
@@ -454,7 +454,7 @@ class Graphe:
                 return (self.reconstruitChemin(cheminTmp, source, dest), explore)
     
     
-     def DijkstraV4(self, source, dest):
+     def DijkstraV3(self, source, dest): #Version la plus complexe de l'algorithme de Dijkstra, rendant la liste des chemins candidats non dominés, utilisant la distance et le danger (contenus dans une etiquette) comme critères de choix du prochain noeud à explorer
             # Initialisation
             distanceEuclidienne = self.distanceEuclidienne(source, dest)
             distance = [sys.maxsize] * len(self.listeNoeud)
@@ -550,7 +550,7 @@ class Graphe:
         yDest = noeudDest.pixelY
         return math.sqrt((xDest-xSource)**2 + (yDest-ySource)**2)
 
-     def AStar(self, source, dest) :
+     def AStar(self, source, dest) : #Algorithme A* utilisant la distance euclidienne comme critère de choix du prochain noeud à explorer
         # Initialisation
         distance=[]
         explore=[]
@@ -674,7 +674,7 @@ def noeudPlusProche(event):
 # recupere le noeud source et le noeud dest
 # lance Dijkstra 
 # dessine le chemin (rouge), et l'ensemble des noeuds explorés (jaune)
-def applyDijkstra(graphe) :
+def applyDijkstra(graphe) : #trace le chemin une fois
     print("ok")
 
     global Source
@@ -695,14 +695,14 @@ def applyDijkstra(graphe) :
     noeudCible = graphe.listeNoeud[Source]
     noeudCible.dessinNoeudHuge(graphe, can, "purple")
 
-def applyDijkstraV2(graphe) : #trace le chemin deux fois, une fois pour le danger et une fois pour la distance
+def applyDijkstraV1_2(graphe) : #trace le chemin deux fois, une fois pour le danger et une fois pour la distance
     print("ok")
 
     global Source
     global Destination
 
     # calcul du chemin
-    result= graphe.DijkstraV2(Source, Destination)
+    result= graphe.DijkstraV1_2(Source, Destination)
     print("============ Calcul Chemin OK ================")
     chemin = result[0]    # chemin non formaté
     explore = result[1]
@@ -726,7 +726,7 @@ def applyDijkstraV2(graphe) : #trace le chemin deux fois, une fois pour le dange
     noeudCible = graphe.listeNoeud[Source]
     noeudCible.dessinNoeudHuge(graphe, can, "purple")
 
-def applyDijkstraV3(graphe) : #trace le chemin 10 fois, en faisant varier alpha de 0 à 1 par pas de 0.1
+def applyDijkstraV2(graphe) : #trace le chemin 10 fois, en faisant varier alpha de 0 à 1 par pas de 0.2
     print("ok")
 
     global Source
@@ -734,7 +734,7 @@ def applyDijkstraV3(graphe) : #trace le chemin 10 fois, en faisant varier alpha 
     global alpha
 
     # calcul du chemin
-    result= graphe.DijkstraV3(Source, Destination, 0)
+    result= graphe.DijkstraV2(Source, Destination, 0)
     print("============ Calcul Chemin OK ================")
     chemin = result[0]    # chemin non formaté
     explore = result[1]
@@ -748,7 +748,7 @@ def applyDijkstraV3(graphe) : #trace le chemin 10 fois, en faisant varier alpha 
     noeudCible = graphe.listeNoeud[Source]
     noeudCible.dessinNoeudHuge(graphe, can, "purple")
 
-    result1= graphe.DijkstraV3(Source, Destination, 0.2)
+    result1= graphe.DijkstraV2(Source, Destination, 0.2)
     print("============ Calcul Chemin OK ================")
     chemin1 = result1[0]    # chemin non formaté
     print('CHEMIN DISKSTRA', chemin1)
@@ -758,7 +758,7 @@ def applyDijkstraV3(graphe) : #trace le chemin 10 fois, en faisant varier alpha 
     noeudCible = graphe.listeNoeud[Source]
     noeudCible.dessinNoeudHuge(graphe, can, "purple")
 
-    result2= graphe.DijkstraV3(Source, Destination, 0.4)
+    result2= graphe.DijkstraV2(Source, Destination, 0.4)
     print("============ Calcul Chemin OK ================")
     chemin2 = result2[0]    # chemin non formaté
     print('CHEMIN DISKSTRA', chemin2)
@@ -768,7 +768,7 @@ def applyDijkstraV3(graphe) : #trace le chemin 10 fois, en faisant varier alpha 
     noeudCible = graphe.listeNoeud[Source]
     noeudCible.dessinNoeudHuge(graphe, can, "purple")
 
-    result3= graphe.DijkstraV3(Source, Destination, 0.6)
+    result3= graphe.DijkstraV2(Source, Destination, 0.6)
     print("============ Calcul Chemin OK ================")
     chemin3 = result3[0]    # chemin non formaté
     print('CHEMIN DISKSTRA', chemin3)
@@ -778,7 +778,7 @@ def applyDijkstraV3(graphe) : #trace le chemin 10 fois, en faisant varier alpha 
     noeudCible = graphe.listeNoeud[Source]
     noeudCible.dessinNoeudHuge(graphe, can, "purple")
 
-    result4= graphe.DijkstraV3(Source, Destination, 0.8)
+    result4= graphe.DijkstraV2(Source, Destination, 0.8)
     print("============ Calcul Chemin OK ================")
     chemin4 = result4[0]    # chemin non formaté
     print('CHEMIN DISKSTRA', chemin4)
@@ -788,7 +788,7 @@ def applyDijkstraV3(graphe) : #trace le chemin 10 fois, en faisant varier alpha 
     noeudCible = graphe.listeNoeud[Source]
     noeudCible.dessinNoeudHuge(graphe, can, "purple")
 
-    result5= graphe.DijkstraV3(Source, Destination, 1)
+    result5= graphe.DijkstraV2(Source, Destination, 1)
     print("============ Calcul Chemin OK ================")
     chemin5 = result5[0]    # chemin non formaté
     print('CHEMIN DISKSTRA', chemin5)
@@ -799,14 +799,14 @@ def applyDijkstraV3(graphe) : #trace le chemin 10 fois, en faisant varier alpha 
     noeudCible.dessinNoeudHuge(graphe, can, "purple")
 
 
-def ApplyDijkstraV4(graphe) : 
+def ApplyDijkstraV3(graphe) : #trace le chemin autant de fois qu'il y a de chemins non dominés, en utilisant la version avec etiquettes de l'algorithme de Dijkstra
     print("ok")
 
     global Source
     global Destination
 
     # calcul du chemin 
-    result= graphe.DijkstraV4(Source, Destination)
+    result= graphe.DijkstraV3(Source, Destination)
     print("============ Calcul Chemin OK ================")
     
     can.delete(ALL)
@@ -841,7 +841,27 @@ def ApplyDijkstraV4(graphe) :
 # recupere le noeud source et le noeud dest
 # lance A* 
 # dessine le chemin (rouge), et l'ensemble des noeuds explorés (jaune)def applyAStar(graphe) :
-def applyAStar(graphe) :
+def applyAStar(graphe) : #Version de la fonction applyAStar permettant de tracer le chemin une fois
+    print("ok")
+    global Source
+    global Destination
+    # calcul du chemin 
+    result= graphe.AStar(Source, Destination)
+    print("============ Calcul Chemin OK ================")
+    chemin = result[0]    # chemin non formaté
+    explore = result[1]    
+    print('CHEMIN ASTAR',chemin)
+    can.delete(ALL)
+    graphe.dessinGraphe(can, "grey50")
+    graphe.dessinCheminNoeud(can, explore, "yellow")
+    graphe.dessinCheminNoeud(can, chemin, "red")
+    noeudCible = graphe.listeNoeud[Destination]
+    noeudCible.dessinNoeudHuge(graphe, can, "green")
+    noeudCible = graphe.listeNoeud[Source]
+    noeudCible.dessinNoeudHuge(graphe, can, "purple")
+
+
+def applyAStar2(graphe) : #Version de la fonction applyAStar permettant de tracer le chemin sur une carte folium
     print("ok")
 
     global Source
@@ -913,9 +933,9 @@ can.bind("<Button-1>", lambda event, g = graphe :callback1(event, g))
 can.bind("<Button-3>", lambda event, g = graphe :callback2(event, g))
 b = Button(fen , text = "Dijkstra", command = lambda   g= graphe :applyDijkstra(g))
 c = Button(fen , text = "   A*   ", command = lambda   g= graphe :applyAStar(g))
-d = Button(fen , text = "DijkstraV2", command = lambda   g= graphe :applyDijkstraV2(g))
-e = Button(fen , text = "DijkstraV3", command = lambda   g= graphe :applyDijkstraV3(g))
-f = Button(fen , text = "DijkstraV4", command = lambda   g= graphe :ApplyDijkstraV4(g))
+d = Button(fen , text = "DijkstraV1_2", command = lambda   g= graphe :applyDijkstraV1_2(g))
+e = Button(fen , text = "DijkstraV2", command = lambda   g= graphe :applyDijkstraV2(g))
+f = Button(fen , text = "DijkstraV3", command = lambda   g= graphe :ApplyDijkstraV3(g))
 
  
 # Placer le bouton sur la fenêtre
@@ -928,9 +948,17 @@ f.pack()
 graphe.dessinGraphe(can, "grey50")
 
 can.pack()
+
+#POUR UTILISER LE PROGRAMME ORIGINEL : enlever les commentaires devant fen.mainloop()
+
 #fen.mainloop()
 
-#lectureArc(nomFichierArc, G) 
+
+# --------------------------------------------------------------------------------------------
+# POUR UTILISER LA MAP FOLIUM : 
+# enlever les commentaires des lignes suivantes
+# --------------------------------------------------------------------------------------------
+
 Source = 0 
 Destination = 180
-applyAStar(graphe)
+applyAStar2(graphe)
