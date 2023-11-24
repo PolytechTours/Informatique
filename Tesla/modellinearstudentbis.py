@@ -122,7 +122,7 @@ def main():
     nbdim = images.shape[1] 
     
     pas=0.00001
-    nbiter=15
+    nbiter=10
     print('Pas :',pas)
     print('Nombre itération : ',nbiter)
     W=np.zeros((nbdim,1))
