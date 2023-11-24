@@ -136,7 +136,7 @@ def main():
         for j in range (0,len(train_index),BATCH_SIZE):
           images, rotations = getBatch(content, train_index, BATCH_SIZE,True)
           
-          W,error =DescenteGradient(images,rotations,W,pas,nbiter)
+          W,error =DescenteGradient(images,rotations,W,pas)
     
 	# 2 : Récupérer un lot de données par la méthode get Batch
     
